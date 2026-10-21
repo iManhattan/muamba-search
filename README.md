@@ -1,114 +1,85 @@
 # 🔍 Muamba Search
 
-Scanner automatizado de lotes e oportunidades do **Leilão da Receita Federal** ([Sistema de Leilão Eletrônico - SLE Sociedade](https://www25.receita.fazenda.gov.br/sle-sociedade/portal)), focado em identificar produtos de alta liquidez e margem para **revenda**.
+Aplicação web e scanner de oportunidades do **Leilão da Receita Federal** ([Sistema de Leilão Eletrônico - SLE Sociedade](https://www25.receita.fazenda.gov.br/sle-sociedade/portal)), criada para identificar produtos de alta liquidez e margem para **revenda**.
+
+Construída em **Next.js (React + TypeScript + Tailwind CSS)**, pronta para rodar **localmente** e ser publicada com 1 clique na **Vercel**.
 
 ---
 
-## ⚡ Como Funciona
+## ✨ Funcionalidades da Aplicação Web
 
-Diferente de scrapers tradicionais lentos e frágeis baseados em emulação de navegador (Selenium/Playwright), o **Muamba Search** conecta-se diretamente aos **endpoints REST públicos** do portal oficial do SLE da Receita Federal:
-* **Varredura Ultrarrápida e Paralela:** Processa centenas de lotes em poucos segundos via multithreading.
-* **Busca no Nível do Item:** Analisa cada descrição individual, quantidades e recinto de armazenagem dentro de cada lote.
-* **Filtros Avançados:** Filtra por palavras-chave, tipo de participante (**PF vs. PJ**), lance mínimo máximo e cidade/região fiscal.
-* **Exportação Direta:** Gera relatórios em `.xlsx` (Excel) ou `.csv` com links diretos para cada lote.
+* 🔍 **Busca por Palavras-Chave:** Filtre por celulares, videogames, placas de vídeo, memórias, drones ou qualquer mercadoria.
+* 📷 **Galeria e Carrossel de Fotos:** Visualização das fotos oficiais armazenadas pela Receita Federal com modal em tela cheia e alta resolução.
+* ⚠️ **Avisos e Erratas Oficiais em Destaque:** Alertas destacados nos lotes com avisos cruciais (ex: bens armazenados em outro estado/cidade).
+* 👤 **Filtro PF vs. PJ:** Separe facilmente lotes liberados para Pessoa Física daqueles exclusivos para Pessoa Jurídica.
+* 💰 **Margem e Desconto Estimado:** Cálculo automático da porcentagem de desconto inicial em relação ao valor de avaliação do lote.
+* 📊 **Exportação para Planilha:** Botão no navegador para baixar todos os lotes encontrados em formato `.csv` compatível com Excel.
+* ⚡ **Arquitetura Serverless:** Consultas diretas e paralelas à API REST do SLE, sem navegadores pesados nem dependência de banco de dados.
 
 ---
 
-## 📦 Instalação
+## 🚀 Como Executar Localmente
 
-Clone o repositório e instale as dependências:
+### 1. Pré-requisitos
+* Node.js (versão 18 ou superior) instalado.
+
+### 2. Instalação e Execução
+Na pasta do projeto, execute:
 
 ```bash
-git clone https://github.com/gabriel-fonseca/muamba-search.git
-cd muamba-search
+# 1. Instalar dependências (caso não tenha instalado)
+npm install
 
+# 2. Iniciar o servidor de desenvolvimento local
+npm run dev
+```
+
+Abra o seu navegador em:
+👉 **[http://localhost:3000](http://localhost:3000)**
+
+---
+
+## ☁️ Como Fazer Deploy na Vercel
+
+A aplicação foi desenhada nativamente para a **Vercel**:
+
+### Opção 1: Pelo Painel Web da Vercel (Recomendado)
+1. Faça o push do seu repositório para o seu **GitHub**.
+2. Acesse [vercel.com](https://vercel.com) e faça login.
+3. Clique em **"Add New..."** ➔ **"Project"**.
+4. Selecione o repositório **`muamba-search`**.
+5. O Next.js será detectado automaticamente. Basta clicar em **"Deploy"**!
+
+### Opção 2: Pelo Terminal (Vercel CLI)
+```bash
+npm i -g vercel
+vercel
+```
+
+---
+
+## 🐍 Utilitário Alternativo via Terminal (Python CLI)
+
+O repositório também inclui a ferramenta de terminal em Python:
+
+```bash
+# Instalar dependências Python
 pip install -r requirements.txt
-```
 
----
-
-## 🚀 Como Usar
-
-### 1. Listar todos os editais abertos no momento
-Visualize rapidamente os editais em andamento no Brasil, datas limites para envio de propostas e permissão de PF/PJ:
-
-```bash
+# Listar editais abertos
 python -m muamba.cli --listar-editais
+
+# Buscar e exportar para Excel
+python -m muamba.cli -t "iphone, macbook, memoria" -o oportunidades.xlsx
 ```
 
 ---
 
-### 2. Buscar por palavras-chave
-Busque por termos de interesse (ex: celulares, notebooks, videogames, drones, placas de vídeo):
-
-```bash
-python -m muamba.cli -t "iphone, macbook, playstation, nintendo, rtx"
-```
-
----
-
-### 3. Filtrar apenas lotes para Pessoa Física (PF)
-Se você não possui CNPJ e pretende participar como Pessoa Física:
-
-```bash
-python -m muamba.cli -t "celular, videogame" --pf
-```
-
----
-
-### 4. Filtrar por Lance Mínimo e Cidade
-Encontre lotes com lance inicial de até R$ 5.000 em uma região específica:
-
-```bash
-python -m muamba.cli -t "notebook, ipad" -v 5000 -c "São Paulo"
-```
-
----
-
-### 5. Exportar Resultados para Excel ou CSV
-Salve os lotes encontrados diretamente em uma planilha para análise de viabilidade:
-
-```bash
-# Exportar para Excel (.xlsx)
-python -m muamba.cli -t "memoria, cartao, ssd, celular" -o oportunidades.xlsx
-
-# Exportar para CSV
-python -m muamba.cli -t "videogame, console" -o resultados.csv
-```
-
----
-
-## ⚙️ Opções da Linha de Comando (CLI)
-
-| Opção | Abreviação | Descrição | Exemplo |
-| :--- | :---: | :--- | :--- |
-| `--termos` | `-t` | Palavras-chave separadas por vírgula | `-t "iphone, drone"` |
-| `--pf` | | Filtra apenas lotes que aceitam Pessoa Física | `--pf` |
-| `--max-valor` | `-v` | Valor máximo do lance mínimo inicial (R$) | `-v 10000` |
-| `--cidade` | `-c` | Filtra por cidade ou superintendência | `-c "Curitiba"` |
-| `--limite-editais` | `-l` | Limita o número de editais consultados | `-l 3` |
-| `--export` | `-o` | Caminho do arquivo para exportação (`.xlsx` ou `.csv`) | `-o lotes.xlsx` |
-| `--listar-editais` | | Lista apenas os editais sem varrer lotes | `--listar-editais` |
-
----
-
-## 💡 Dicas Importantes para Revenda em Leilões da Receita
+## 💡 Dicas para Arrematação na Receita Federal
 
 1. **Pessoa Física vs. Pessoa Jurídica:**
-   * Lotes destinados expressamente a revenda comercial geralmente exigem **Pessoa Jurídica (CNPJ)** com CNAE compatível.
-   * Lotes liberados para **Pessoa Física (PF)** são destinados prioritariamente a uso e consumo próprio, embora existam excelentes oportunidades em lotes unitários ou mistos.
-2. **ICMS e Custos Extras:**
-   * O valor arrematado não inclui o **ICMS** do estado onde a mercadoria se encontra (normalmente recolhido via DAE/GNRE antes da retirada).
-   * Verifique as regras de taxa de armazenagem no edital completo.
-3. **Logística de Retirada:**
-   * A Receita Federal **não realiza frete**. O arrematante deve retirar as mercadorias presencialmente no depósito indicado ou emitir uma procuração para uma transportadora credenciada.
-
----
-
-## 🧪 Testes
-
-Para executar a suíte de testes unitários:
-
-```bash
-python -m pytest
-```
+   * Lotes para **Pessoa Física (PF)** são voltados para uso próprio. Para revenda comercial contínua em volume, utilize **Pessoa Jurídica (PJ)** com CNAE apropriado.
+2. **ICMS Estadual:**
+   * O lance vencedor não inclui o ICMS do estado de retirada (geralmente pago via guia DAE antes da retirada dos itens).
+3. **Retirada das Mercadorias:**
+   * A Receita Federal **não realiza frete nem entrega**. É obrigatório comparecer ao depósito ou enviar transportadora com procuração do arrematante.
