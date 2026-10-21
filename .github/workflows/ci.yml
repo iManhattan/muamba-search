@@ -2,9 +2,9 @@ name: CI - Verificação Pré-Produção
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   # 1. Validação do Frontend (Next.js & TypeScript)
