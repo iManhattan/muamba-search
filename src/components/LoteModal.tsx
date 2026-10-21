@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Lote } from "@/lib/types";
 import { formatarDataBR, getStatusPrazo } from "@/lib/date-utils";
+import { extrairProdutoIdentificavel } from "@/lib/product-identifier";
+import { MarketPricesSection } from "./MarketPricesSection";
 import {
   X,
   ChevronLeft,
@@ -11,11 +13,11 @@ import {
   AlertTriangle,
   MapPin,
   Package,
-  ShieldCheck,
   Building,
   Calendar,
   Clock,
   Landmark,
+  ShoppingBag,
 } from "lucide-react";
 
 interface LoteModalProps {
@@ -40,6 +42,20 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
   const fotoAtual = temFotos ? fotos[activePhotoIndex] : null;
 
   const statusPrazo = getStatusPrazo(lote.dataInicioPropostas, lote.dataFimPropostas);
+
+  // Extrai produtos facilmente identificáveis para busca de preços
+  const produtosIdentificaveis: { descricaoOriginal: string; queryLimpa: string }[] = [];
+  for (const item of lote.itens) {
+    const limpo = extrairProdutoIdentificavel(item.descricao);
+    if (limpo && !produtosIdentificaveis.some((p) => p.queryLimpa.toLowerCase() === limpo.toLowerCase())) {
+      produtosIdentificaveis.push({
+        descricaoOriginal: item.descricao,
+        queryLimpa: limpo,
+      });
+    }
+  }
+
+  const [produtoAtivoIdx, setProdutoAtivoIdx] = useState(0);
 
   const nextPhoto = () => {
     setActivePhotoIndex((prev) => (prev + 1) % fotos.length);
@@ -191,6 +207,36 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
             </div>
           )}
 
+          {/* Seção de Anúncios e Preços de Mercado na Internet */}
+          {produtosIdentificaveis.length > 0 && (
+            <div className="space-y-3">
+              {produtosIdentificaveis.length > 1 && (
+                <div className="flex items-center space-x-2 overflow-x-auto py-1 text-xs">
+                  <span className="text-slate-400 font-medium whitespace-nowrap">
+                    Produtos Identificados:
+                  </span>
+                  {produtosIdentificaveis.map((prod, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setProdutoAtivoIdx(idx)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition ${
+                        produtoAtivoIdx === idx
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
+                      }`}
+                    >
+                      {prod.queryLimpa}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <MarketPricesSection
+                produtoQuery={produtosIdentificaveis[produtoAtivoIdx]?.queryLimpa}
+              />
+            </div>
+          )}
+
           {/* Seção de Avisos e Erratas */}
           {lote.avisosErratas && lote.avisosErratas.length > 0 && (
             <div className="space-y-3 bg-amber-500/10 border border-amber-500/30 p-4 sm:p-5 rounded-2xl">
@@ -276,7 +322,7 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
           </div>
         </div>
 
-        {/* Footer com botão direto e destacado para a Receita Federal */}
+        {/* Footer com botão direto para a Receita Federal */}
         <div className="sticky bottom-0 z-20 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-xs text-slate-400">
             Atenção: A Receita não faz envio. Verifique o ICMS estadual e custos de retirada.

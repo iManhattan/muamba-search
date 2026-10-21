@@ -3,6 +3,7 @@
 import React from "react";
 import { Lote } from "@/lib/types";
 import { formatarDataBR, getStatusPrazo } from "@/lib/date-utils";
+import { extrairProdutoIdentificavel } from "@/lib/product-identifier";
 import {
   ExternalLink,
   ImageIcon,
@@ -11,8 +12,8 @@ import {
   Tag,
   Eye,
   TrendingDown,
-  Clock,
   Landmark,
+  ShoppingBag,
 } from "lucide-react";
 
 interface LoteCardProps {
@@ -35,6 +36,11 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
 
   // Status de prazo de propostas
   const statusPrazo = getStatusPrazo(lote.dataInicioPropostas, lote.dataFimPropostas);
+
+  // Identifica se há produtos facilmente identificáveis para busca de preços
+  const primeiroIdentificavel = lote.itens
+    .map((i) => extrairProdutoIdentificavel(i.descricao))
+    .find((p) => p !== null);
 
   // Cálculo de desconto sobre o valor de avaliação
   const desconto =
@@ -85,9 +91,12 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             </span>
 
             {desconto > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1 backdrop-blur">
+              <span
+                title={`${desconto}% abaixo da avaliação da Receita`}
+                className="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1 backdrop-blur cursor-help"
+              >
                 <TrendingDown className="h-3 w-3" />
-                <span>-{desconto}%</span>
+                <span>-{desconto}% sobre avaliação</span>
               </span>
             )}
           </div>
@@ -123,6 +132,20 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             <Tag className="h-3 w-3 text-slate-500" />
             <span className="truncate">{lote.tipo}</span>
           </div>
+
+          {/* Destaque para produtos com anúncios de mercado disponíveis */}
+          {primeiroIdentificavel && (
+            <div
+              onClick={() => onOpenDetails(lote)}
+              className="mb-3 px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 flex items-center justify-between cursor-pointer transition"
+            >
+              <div className="flex items-center space-x-1.5 truncate">
+                <ShoppingBag className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate font-medium">Preços na Web: {primeiroIdentificavel}</span>
+              </div>
+              <span className="text-[10px] text-emerald-400 font-bold shrink-0 ml-1">Ver ofertas ➔</span>
+            </div>
+          )}
 
           {/* Alerta de Avisos / Erratas da Receita */}
           {temAvisos && (
@@ -193,7 +216,7 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             className="flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition"
           >
             <Eye className="h-3.5 w-3.5 text-slate-400" />
-            <span>Fotos & Detalhes</span>
+            <span>Fotos & Preços</span>
           </button>
 
           <a
