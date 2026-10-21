@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { extrairProdutoIdentificavel } from "@/lib/product-identifier";
 
 export interface AnuncioMercado {
   title: string;
@@ -10,13 +11,16 @@ export interface AnuncioMercado {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q");
+  const rawQuery = searchParams.get("q");
 
-  if (!query) {
+  if (!rawQuery) {
     return NextResponse.json({ error: "Parâmetro 'q' é obrigatório" }, { status: 400 });
   }
 
-  const encodedQuery = encodeURIComponent(query.trim());
+  // Remove ruídos (IMEI, códigos de modelo A3519, serial, etc.) para garantir anúncios reais
+  const query = extrairProdutoIdentificavel(rawQuery) || rawQuery.trim();
+
+  const encodedQuery = encodeURIComponent(query);
   const googleShoppingUrl = `https://www.google.com/search?tbm=shop&q=${encodedQuery}`;
   const mercadoLivreUrl = `https://lista.mercadolivre.com.br/${encodedQuery}`;
 
