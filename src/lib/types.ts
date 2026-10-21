@@ -51,6 +51,9 @@ export interface Lote {
   avisosErratas: AvisoErrata[];
   nrAvisos: number;
   nrErratas: number;
+  dataInicioPropostas?: string;
+  dataFimPropostas?: string;
+  dataAberturaLances?: string;
   urlOficial: string;
 }
 

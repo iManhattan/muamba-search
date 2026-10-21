@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Lote } from "@/lib/types";
+import { formatarDataBR, getStatusPrazo } from "@/lib/date-utils";
 import {
   ExternalLink,
   ImageIcon,
@@ -10,6 +11,8 @@ import {
   Tag,
   Eye,
   TrendingDown,
+  Clock,
+  Landmark,
 } from "lucide-react";
 
 interface LoteCardProps {
@@ -29,6 +32,9 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
   const fotoCapa = temFotos ? lote.imagens[0].min || lote.imagens[0].src : null;
 
   const temAvisos = lote.avisosErratas && lote.avisosErratas.length > 0;
+
+  // Status de prazo de propostas
+  const statusPrazo = getStatusPrazo(lote.dataInicioPropostas, lote.dataFimPropostas);
 
   // Cálculo de desconto sobre o valor de avaliação
   const desconto =
@@ -66,7 +72,7 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             </div>
           )}
 
-          {/* Badges Flutuantes */}
+          {/* Badges Flutuantes Superiores */}
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
             <span
               className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border backdrop-blur ${
@@ -79,7 +85,7 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             </span>
 
             {desconto > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1">
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1 backdrop-blur">
                 <TrendingDown className="h-3 w-3" />
                 <span>-{desconto}%</span>
               </span>
@@ -89,19 +95,29 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
 
         {/* Informações Principais */}
         <div className="p-4 sm:p-5">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-            <span className="font-mono bg-slate-800/80 px-2 py-0.5 rounded text-slate-300 border border-slate-700/60">
-              Edital {lote.edle}
+          {/* Prazo e Situação de Propostas */}
+          <div className="mb-2.5 flex items-center justify-between">
+            <div
+              className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${statusPrazo.badgeClass}`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${statusPrazo.dotClass}`} />
+              <span>{statusPrazo.label}</span>
+            </div>
+
+            <span className="font-mono text-xs bg-slate-800/80 px-2 py-0.5 rounded text-slate-300 border border-slate-700/60">
+              Ed. {lote.edle}
             </span>
-            <span className="flex items-center space-x-1 text-slate-400 truncate max-w-[150px]">
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition truncate">
+              Lote {lote.numero}
+            </h3>
+            <span className="flex items-center space-x-1 text-slate-400 truncate max-w-[140px]">
               <MapPin className="h-3 w-3 text-slate-500 shrink-0" />
               <span className="truncate">{lote.cidade}</span>
             </span>
           </div>
-
-          <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition mb-1">
-            Lote {lote.numero}
-          </h3>
 
           <div className="flex items-center space-x-1 text-xs text-slate-400 mb-3">
             <Tag className="h-3 w-3 text-slate-500" />
@@ -113,7 +129,9 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
             <div className="mb-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-xs text-amber-200 flex items-start space-x-2">
               <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-0.5 overflow-hidden">
-                <span className="font-semibold block">Aviso do Lote:</span>
+                <span className="font-semibold block text-[11px] uppercase tracking-wide text-amber-300">
+                  Aviso Oficial do Lote:
+                </span>
                 <p className="line-clamp-2 text-amber-200/90 text-[11px] leading-relaxed">
                   {lote.avisosErratas[0].texto}
                 </p>
@@ -128,8 +146,9 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
 
           {/* Lista de Mercadorias Encontradas */}
           <div className="space-y-1 mb-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-              Itens no Lote ({lote.itens.length}):
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>Mercadorias no Lote:</span>
+              <span className="text-slate-500 font-normal">{lote.itens.length} item(ns)</span>
             </div>
             {lote.itensMatch.slice(0, 3).map((item, idx) => (
               <div key={idx} className="text-xs text-slate-200 flex items-start space-x-1.5 leading-snug">
@@ -167,24 +186,27 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
       </div>
 
       {/* Botões de Ação */}
-      <div className="p-4 pt-0 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => onOpenDetails(lote)}
-          className="flex items-center justify-center space-x-1.5 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 transition"
-        >
-          <Eye className="h-3.5 w-3.5 text-slate-400" />
-          <span>Ver Fotos ({lote.imagens.length})</span>
-        </button>
+      <div className="p-4 pt-0 space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onOpenDetails(lote)}
+            className="flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition"
+          >
+            <Eye className="h-3.5 w-3.5 text-slate-400" />
+            <span>Fotos & Detalhes</span>
+          </button>
 
-        <a
-          href={lote.urlOficial}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center space-x-1.5 py-2 px-3 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 text-xs font-semibold rounded-xl transition"
-        >
-          <span>Dar Lance</span>
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+          <a
+            href={lote.urlOficial}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition"
+          >
+            <Landmark className="h-3.5 w-3.5" />
+            <span>Ver na Receita</span>
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
       </div>
     </div>
   );

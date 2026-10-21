@@ -151,6 +151,9 @@ export async function GET(req: NextRequest) {
             avisosErratas,
             nrAvisos: detalhe.nrAvisos || avisosErratas.filter((a) => a.tipo === "Aviso").length,
             nrErratas: detalhe.nrErratas || avisosErratas.filter((a) => a.tipo === "Errata").length,
+            dataInicioPropostas: edital.dataInicioPropostas,
+            dataFimPropostas: edital.dataFimPropostas,
+            dataAberturaLances: edital.dataAberturaLances,
             urlOficial: buildOficialUrl(unidade, numero, exercicio, loteNr),
           };
 

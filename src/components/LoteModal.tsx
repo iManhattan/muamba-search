@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Lote } from "@/lib/types";
+import { formatarDataBR, getStatusPrazo } from "@/lib/date-utils";
 import {
   X,
   ChevronLeft,
@@ -13,6 +14,8 @@ import {
   ShieldCheck,
   Building,
   Calendar,
+  Clock,
+  Landmark,
 } from "lucide-react";
 
 interface LoteModalProps {
@@ -36,6 +39,8 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
   const temFotos = fotos.length > 0;
   const fotoAtual = temFotos ? fotos[activePhotoIndex] : null;
 
+  const statusPrazo = getStatusPrazo(lote.dataInicioPropostas, lote.dataFimPropostas);
+
   const nextPhoto = () => {
     setActivePhotoIndex((prev) => (prev + 1) % fotos.length);
   };
@@ -45,15 +50,18 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div
-        className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
+        className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-6 py-4 flex items-center justify-between">
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300 border border-slate-700">
                 Edital {lote.edle}
               </span>
@@ -66,6 +74,13 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
               >
                 {lote.permitePF ? "Pessoa Física e Jurídica" : "Apenas Pessoa Jurídica (PJ)"}
               </span>
+
+              <span
+                className={`text-xs px-2.5 py-0.5 rounded-full font-medium border flex items-center space-x-1.5 ${statusPrazo.badgeClass}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${statusPrazo.dotClass}`} />
+                <span>{statusPrazo.label}</span>
+              </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white mt-1">
               Lote {lote.numero} - {lote.tipo}
@@ -74,7 +89,7 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition"
+            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition shrink-0"
           >
             <X className="h-5 w-5" />
           </button>
@@ -82,6 +97,39 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
 
         {/* Conteúdo do Modal */}
         <div className="p-6 space-y-6">
+          {/* Cronograma do Edital com Datas Formatadas */}
+          <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="space-y-1">
+              <span className="text-slate-400 flex items-center space-x-1 font-medium">
+                <Clock className="h-3.5 w-3.5 text-slate-500" />
+                <span>Início das Propostas:</span>
+              </span>
+              <span className="text-white font-semibold block text-sm">
+                {formatarDataBR(lote.dataInicioPropostas)}
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-slate-400 flex items-center space-x-1 font-medium">
+                <Clock className="h-3.5 w-3.5 text-amber-500" />
+                <span>Fim das Propostas (Prazo):</span>
+              </span>
+              <span className="text-amber-300 font-semibold block text-sm">
+                {formatarDataBR(lote.dataFimPropostas)}
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-slate-400 flex items-center space-x-1 font-medium">
+                <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Sessão de Lances (Disputa):</span>
+              </span>
+              <span className="text-emerald-400 font-semibold block text-sm">
+                {formatarDataBR(lote.dataAberturaLances)}
+              </span>
+            </div>
+          </div>
+
           {/* Carrossel de Fotos */}
           {temFotos ? (
             <div className="space-y-3">
@@ -161,7 +209,7 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
                       {aviso.data && (
                         <span className="text-slate-400 font-normal flex items-center space-x-1">
                           <Calendar className="h-3 w-3" />
-                          <span>{aviso.data}</span>
+                          <span>{formatarDataBR(aviso.data)}</span>
                         </span>
                       )}
                     </div>
@@ -228,8 +276,8 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
           </div>
         </div>
 
-        {/* Footer com link oficial */}
-        <div className="sticky bottom-0 z-10 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Footer com botão direto e destacado para a Receita Federal */}
+        <div className="sticky bottom-0 z-20 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-xs text-slate-400">
             Atenção: A Receita não faz envio. Verifique o ICMS estadual e custos de retirada.
           </div>
@@ -238,9 +286,10 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
             href={lote.urlOficial}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition duration-200"
           >
-            <span>Acessar no Portal Oficial da Receita</span>
+            <Landmark className="h-4 w-4" />
+            <span>Acessar no Portal Oficial da Receita Federal</span>
             <ExternalLink className="h-4 w-4" />
           </a>
         </div>
