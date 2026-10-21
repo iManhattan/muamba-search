@@ -247,7 +247,13 @@ export default function Home() {
       </main>
 
       {/* Modal de Detalhes e Fotos do Lote */}
-      <LoteModal lote={selectedLote} onClose={() => setSelectedLote(null)} />
+      {selectedLote && (
+        <LoteModal
+          key={`${selectedLote.edle}-${selectedLote.numero}`}
+          lote={selectedLote}
+          onClose={() => setSelectedLote(null)}
+        />
+      )}
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">

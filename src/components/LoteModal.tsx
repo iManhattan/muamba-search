@@ -27,6 +27,7 @@ interface LoteModalProps {
 
 export function LoteModal({ lote, onClose }: LoteModalProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [produtoAtivoIdx, setProdutoAtivoIdx] = useState(0);
 
   if (!lote) return null;
 
@@ -54,8 +55,6 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
       });
     }
   }
-
-  const [produtoAtivoIdx, setProdutoAtivoIdx] = useState(0);
 
   const nextPhoto = () => {
     setActivePhotoIndex((prev) => (prev + 1) % fotos.length);
