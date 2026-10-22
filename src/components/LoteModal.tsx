@@ -18,14 +18,17 @@ import {
   Clock,
   Landmark,
   ShoppingBag,
+  Star,
 } from "lucide-react";
 
 interface LoteModalProps {
   lote: Lote | null;
   onClose: () => void;
+  isSaved?: boolean;
+  onToggleSave?: (lote: Lote) => void;
 }
 
-export function LoteModal({ lote, onClose }: LoteModalProps) {
+export function LoteModal({ lote, onClose, isSaved = false, onToggleSave }: LoteModalProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [produtoAtivoIdx, setProdutoAtivoIdx] = useState(0);
 
@@ -102,12 +105,27 @@ export function LoteModal({ lote, onClose }: LoteModalProps) {
             </h2>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition shrink-0"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => onToggleSave?.(lote)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition shadow-sm ${
+                isSaved
+                  ? "bg-amber-500/20 text-amber-300 border-amber-400/50 hover:bg-amber-500/30"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700 hover:text-white"
+              }`}
+            >
+              <Star className={`h-4 w-4 ${isSaved ? "fill-amber-400 text-amber-400" : ""}`} />
+              <span>{isSaved ? "Salvo na Nuvem" : "Salvar Lote"}</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Conteúdo do Modal */}

@@ -14,14 +14,17 @@ import {
   TrendingDown,
   Landmark,
   ShoppingBag,
+  Star,
 } from "lucide-react";
 
 interface LoteCardProps {
   lote: Lote;
   onOpenDetails: (lote: Lote) => void;
+  isSaved?: boolean;
+  onToggleSave?: (lote: Lote) => void;
 }
 
-export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
+export function LoteCard({ lote, onOpenDetails, isSaved = false, onToggleSave }: LoteCardProps) {
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -100,6 +103,27 @@ export function LoteCard({ lote, onOpenDetails }: LoteCardProps) {
               </span>
             )}
           </div>
+
+          {/* Botão de Favorito / Salvar na Nuvem */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave?.(lote);
+            }}
+            title={isSaved ? "Remover dos salvos na nuvem" : "Salvar lote na nuvem"}
+            className={`absolute top-2.5 right-2.5 p-2 rounded-xl backdrop-blur transition-all duration-200 z-10 shadow-md ${
+              isSaved
+                ? "bg-amber-500/25 text-amber-300 border border-amber-400/50 hover:bg-amber-500/35"
+                : "bg-slate-950/70 text-slate-300 border border-white/10 hover:text-amber-300 hover:bg-slate-900/90"
+            }`}
+          >
+            <Star
+              className={`h-4 w-4 transition-transform active:scale-125 ${
+                isSaved ? "fill-amber-400 text-amber-400" : ""
+              }`}
+            />
+          </button>
         </div>
 
         {/* Informações Principais */}

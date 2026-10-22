@@ -55,6 +55,7 @@ export interface Lote {
   dataFimPropostas?: string;
   dataAberturaLances?: string;
   urlOficial: string;
+  salvoEm?: string;
 }
 
 export interface SearchFilters {
