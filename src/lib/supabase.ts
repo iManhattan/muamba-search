@@ -1,27 +1,38 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Lote } from "./types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
 export const isSupabaseConfigured = (): boolean => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return (
-    typeof supabaseUrl === "string" &&
-    supabaseUrl.length > 0 &&
-    !supabaseUrl.includes("sua-url-aqui") &&
-    typeof supabaseAnonKey === "string" &&
-    supabaseAnonKey.length > 0
+    typeof url === "string" &&
+    url.length > 0 &&
+    !url.includes("sua-url-aqui") &&
+    typeof key === "string" &&
+    key.length > 0
   );
 };
 
-// Instância singleton do cliente Supabase
-export const supabase: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(supabaseUrl!, supabaseAnonKey!, {
-      auth: {
-        persistSession: false,
-      },
-    })
-  : null;
+let cachedClient: SupabaseClient | null = null;
+
+export const getSupabase = (): SupabaseClient | null => {
+  if (cachedClient) return cachedClient;
+  if (!isSupabaseConfigured()) return null;
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  cachedClient = createClient(url, key, {
+    auth: {
+      persistSession: false,
+    },
+  });
+
+  return cachedClient;
+};
+
+// Cliente para uso direto em componentes e hooks
+export const supabase: SupabaseClient | null = getSupabase();
 
 // Converte um registro do banco (snake_case) para a interface Lote (camelCase)
 export function rowToLote(row: any): Lote {

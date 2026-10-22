@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Lote } from "./types";
-import { supabase, isSupabaseConfigured, rowToLote } from "./supabase";
+import { getSupabase, isSupabaseConfigured, rowToLote } from "./supabase";
 
 const LOCAL_STORAGE_KEY = "muamba_saved_lotes_fallback_v1";
 
@@ -54,9 +54,10 @@ export function useSavedLotes() {
 
   // Sincronização em tempo real (Supabase Realtime)
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) return;
+    const client = getSupabase();
+    if (!isSupabaseConfigured() || !client) return;
 
-    const channel = supabase
+    const channel = client
       .channel("realtime_saved_lotes")
       .on(
         "postgres_changes",
@@ -90,7 +91,7 @@ export function useSavedLotes() {
       .subscribe();
 
     return () => {
-      supabase?.removeChannel(channel);
+      client?.removeChannel(channel);
     };
   }, []);
 

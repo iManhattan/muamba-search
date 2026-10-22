@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, isSupabaseConfigured, rowToLote, loteToRow } from "@/lib/supabase";
+import { getSupabase, isSupabaseConfigured, rowToLote, loteToRow } from "@/lib/supabase";
 import { Lote } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
-  if (!isSupabaseConfigured() || !supabase) {
+  const db = getSupabase();
+  if (!isSupabaseConfigured() || !db) {
     return NextResponse.json({
       lotes: [],
       isConfigured: false,
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q")?.toLowerCase();
 
-    let dbQuery = supabase
+    let dbQuery = db
       .from("saved_lotes")
       .select("*")
       .order("salvo_em", { ascending: false });
@@ -61,7 +62,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isSupabaseConfigured() || !supabase) {
+  const db = getSupabase();
+  if (!isSupabaseConfigured() || !db) {
     return NextResponse.json(
       {
         error: "Supabase não configurado.",
@@ -84,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     const row = loteToRow(lote);
 
-    const { error } = await supabase
+    const { error } = await db
       .from("saved_lotes")
       .upsert(row, { onConflict: "id" });
 
@@ -107,7 +109,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!isSupabaseConfigured() || !supabase) {
+  const db = getSupabase();
+  if (!isSupabaseConfigured() || !db) {
     return NextResponse.json(
       { error: "Supabase não configurado.", isConfigured: false },
       { status: 503 }
@@ -128,7 +131,7 @@ export async function DELETE(req: NextRequest) {
 
     const id = `${edle}_${numeroStr}`;
 
-    const { error } = await supabase
+    const { error } = await db
       .from("saved_lotes")
       .delete()
       .eq("id", id);
